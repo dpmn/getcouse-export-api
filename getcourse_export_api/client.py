@@ -6,18 +6,18 @@ from getcourse_export_api.exceptions import GetcourseApiError
 class Getcourse:
     def __init__(self, account_name: str, secret_key: str):
         self.account_name = account_name
-        self._secret_key = secret_key
+        self.__secret_key = secret_key
         self._api_base_url = f'https://{account_name}.getcourse.ru/pl/api'
 
-    def _send_request(self, url, filters=None, delay=5):
+    def _make_request(self, url, filters=None, delay=5):
         if filters:
             params = {
-                'key': self._secret_key,
+                'key': self.__secret_key,
                 **filters
             }
         else:
             params = {
-                'key': self._secret_key
+                'key': self.__secret_key
             }
 
         while True:
@@ -32,7 +32,7 @@ class Getcourse:
                 else:
                     sleep(delay)
             else:
-                GetcourseApiError(response.status_code, response.text)
+                GetcourseApiError(response.text)
 
     @staticmethod
     def normalize_response(data):
@@ -56,10 +56,10 @@ class Getcourse:
         action_url = '/'.join([base_url, action])
 
         # Запуск задачи на сбор данных
-        action_response = self._send_request(action_url, filters)
+        action_response = self._make_request(action_url, filters)
         export_id = str(action_response.get('info', {}).get('export_id', 0))
         export_url = '/'.join([base_url, 'exports', export_id])
 
         # Запрос на экспорт данных
-        export_response = self._send_request(export_url)
+        export_response = self._make_request(export_url)
         return export_response
