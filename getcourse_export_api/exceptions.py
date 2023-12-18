@@ -10,7 +10,7 @@ class GetcourseApiError(Exception):
         self.request = kwargs.pop('request', None)
 
 
-class AppmetricaConfigError(GetcourseClientError):
+class GetcourseConfigError(GetcourseClientError):
     def __init__(self, *args, **kwargs):
         self.response = kwargs.pop('response', None)
         self.request = kwargs.pop('request', None)
