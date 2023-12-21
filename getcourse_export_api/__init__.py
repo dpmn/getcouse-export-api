@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from getcourse_export_api.client import Getcourse
 from getcourse_export_api.exceptions import GetcourseApiError, GetcourseClientError, GetcourseConfigError
-from getcourse_export_api.schemas import DealsSchema
+from getcourse_export_api.schemas import DealsSchema, UsersSchema, PaymentsSchema
 
 
 __all__ = [
@@ -9,5 +9,7 @@ __all__ = [
     'GetcourseApiError',
     'GetcourseClientError',
     'GetcourseConfigError',
-    'DealsSchema'
+    'DealsSchema',
+    'UsersSchema',
+    'PaymentsSchema'
 ]
