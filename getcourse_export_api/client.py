@@ -8,8 +8,11 @@ class Getcourse:
         self.account_name = account_name
         self.__secret_key = secret_key
         self._api_base_url = f'https://{account_name}.getcourse.ru/pl/api'
+        self._critical_api_error_codes = (
+            903,  # Слишком много запросов
+        )
 
-    def _make_request(self, url, filters=None, delay=5):
+    def _make_request(self, url, filters=None, delay=10):
         if filters:
             params = {
                 'key': self.__secret_key,
@@ -26,10 +29,15 @@ class Getcourse:
             if response.status_code == 200:
                 response_json = response.json()
                 success = response_json.get('success', False)
+                error = response_json.get('error', False)
+                error_code = response_json.get('error_code', None)
 
                 if success:
                     return response_json
+                elif error and error_code in self._critical_api_error_codes:
+                    raise GetcourseApiError(response_json)
                 else:
+                    # TODO: реализовать логику увеличения времени задержки при большем количестве попыток запроса
                     sleep(delay)
             else:
                 GetcourseApiError(response.text)

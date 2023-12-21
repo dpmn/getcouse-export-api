@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
-from datetime import datetime
+import re
+from pydantic import BaseModel, Field, field_validator
+from datetime import datetime, date
 from decimal import Decimal
 
 
@@ -164,9 +165,43 @@ class DealsSchema(BaseModel):
 class PaymentsSchema(BaseModel):
     """
     Платежи.
-    Список полей: https://getcourse.ru/blog/457215
+    Список полей: https://getcourse.ru/blog/579878
     """
-    pass
+    def __init__(self, **data):
+        for key, val in data.items():
+            if val == '':
+                data[key] = None
+
+        super().__init__(**data)
+
+    @field_validator(
+        'amount',
+        'commissions',
+        'received',
+        mode='before'
+    )
+    @classmethod
+    def parse_amount(cls, value):
+        return float(re.sub(r'[^\d.]', '', value)[:-1])
+
+    payment_number: str | None = Field(
+        alias='Номер',
+        description='Номер платежа'
+    )
+    user_name: str | None = Field(alias='Пользователь')
+    user_email: str | None = Field(alias='Эл. почта')
+    order_id: str | None = Field(alias='Заказ')
+    created_at: datetime | None = Field(alias='Дата создания')
+    order_type: str | None = Field(alias='Тип')
+    payment_status: str | None = Field(alias='Статус')
+    amount: Decimal | None = Field(alias='Сумма')
+    commissions: Decimal | None = Field(alias='Комиссии')
+    received: Decimal | None = Field(alias='Получено')
+    payment_code: str | None = Field(alias='Код платежа')
+    title: str | None = Field(
+        alias='Название',
+        description='Название предложения'
+    )
 
 
 class UsersSchema(BaseModel):
@@ -174,10 +209,41 @@ class UsersSchema(BaseModel):
     Пользователи.
     Список полей: https://getcourse.ru/blog/276069#ltBlock11772746
     """
-    pass
+    def __init__(self, **data):
+        for key, val in data.items():
+            if val == '':
+                data[key] = None
+
+        super().__init__(**data)
+
+    id: str | None = Field(alias='id')
+    email: str | None = Field(alias='Email')
+    registration_type: str | None = Field(alias='Тип регистрации')
+    created_at: datetime | None = Field(alias='Создан')
+    last_activity_at: datetime | None = Field(alias='Последняя активность')
+    first_name: str | None = Field(alias='Имя')
+    last_name: str | None = Field(alias='Фамилия')
+    phone: str | None = Field(alias='Телефон')
+    birthdate: date | None = Field(alias='Дата рождения')
+    age: int | None = Field(alias='Возраст')
+    country: str | None = Field(alias='Страна')
+    city: str | None = Field(alias='Город')
+    from_partner: str | None = Field(alias='От партнера')
+    referral: str | None = Field(alias='Откуда пришел')
+    utm_source: str | None = Field(alias='utm_source')
+    utm_medium: str | None = Field(alias='utm_medium')
+    utm_campaign: str | None = Field(alias='utm_campaign')
+    utm_term: str | None = Field(alias='utm_term')
+    utm_content: str | None = Field(alias='utm_content')
+    utm_group: str | None = Field(alias='utm_group')
+    partner_id: str | None = Field(alias='ID партнера')
+    partner_email: str | None = Field(alias='Email партнера')
+    partner_full_name: str | None = Field(alias='ФИО партнера')
+    manager_full_name: str | None = Field(alias='ФИО менеджера')
+    vk_id: str | None = Field(alias='VK-ID')
 
 
-class GroupsSchema(BaseModel):
+class GroupsSchema(UsersSchema):
     """
     Группы пользователей.
     Список полей: https://getcourse.ru/blog/276069#ltBlock11772746
