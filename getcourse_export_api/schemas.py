@@ -243,10 +243,17 @@ class UsersSchema(BaseModel):
     vk_id: str | None = Field(alias='VK-ID')
 
 
-class GroupsSchema(UsersSchema):
+class GroupsSchema(BaseModel):
+    id: str | None = Field(alias='id')
+    name: str | None = Field(alias='name')
+    last_added_at: datetime | None = Field(alias='last_added_at')
+
+
+class UsersGroupSchema(UsersSchema):
     """
     Группы пользователей.
     Список полей: https://getcourse.ru/blog/276069#ltBlock11772746
     + ID группы и дата добавления в группу
     """
-    pass
+    group_id: str | None = Field(alias='ID группы')
+    group_added_at: datetime | None = Field(alias='Добавлен в группу')

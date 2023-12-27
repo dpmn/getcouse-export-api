@@ -13,6 +13,10 @@ class Getcourse:
         )
 
     def _make_request(self, url, filters=None, delay=10):
+        # Параметры для регулирования скорости выполнения запросов на экспорт
+        retry_count = 0
+        base_delay = 10
+
         if filters:
             params = {
                 'key': self.__secret_key,
@@ -37,8 +41,9 @@ class Getcourse:
                 elif error and error_code in self._critical_api_error_codes:
                     raise GetcourseApiError(response_json)
                 else:
-                    # TODO: реализовать логику увеличения времени задержки при большем количестве попыток запроса
-                    sleep(delay)
+                    # Увеличение задержки с каждой неудачной попыткой
+                    retry_count += 1
+                    sleep(base_delay * retry_count)
             else:
                 GetcourseApiError(response.text)
 
@@ -63,8 +68,16 @@ class Getcourse:
         base_url = '/'.join([self._api_base_url, 'account'])
         action_url = '/'.join([base_url, action])
 
+        # Для получения пользователей по группе можно передать ID группы в фильтре (кастомное решение для этого метода)
+        group_id = filters.pop('group_id', None)
+        if group_id is not None:
+            action_url = '/'.join([action_url, group_id, 'users'])
+
         # Запуск задачи на сбор данных
         action_response = self._make_request(action_url, filters)
+        # API отдаёт сразу список всех групп, делать exports не нужно
+        if action == 'groups' and group_id is None:
+            return action_response
         export_id = str(action_response.get('info', {}).get('export_id', 0))
         export_url = '/'.join([base_url, 'exports', export_id])
 
