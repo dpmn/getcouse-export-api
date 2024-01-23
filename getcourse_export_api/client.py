@@ -12,7 +12,7 @@ class Getcourse:
             903,  # Слишком много запросов
         )
 
-    def _make_request(self, url, filters=None, delay=10):
+    def _make_request(self, url, filters=None):
         # Параметры для регулирования скорости выполнения запросов на экспорт
         retry_count = 0
         base_delay = 10
@@ -82,5 +82,6 @@ class Getcourse:
         export_url = '/'.join([base_url, 'exports', export_id])
 
         # Запрос на экспорт данных
+        sleep(15)  # Даём время на формирование файла
         export_response = self._make_request(export_url)
         return export_response
