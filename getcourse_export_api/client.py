@@ -4,18 +4,18 @@ from getcourse_export_api.exceptions import GetcourseApiError
 
 
 class Getcourse:
-    def __init__(self, account_name: str, secret_key: str):
+    def __init__(self, account_name: str, secret_key: str, **kwargs):
         self.account_name = account_name
         self.__secret_key = secret_key
         self._api_base_url = f'https://{account_name}.getcourse.ru/pl/api'
         self._critical_api_error_codes = (
             903,  # Слишком много запросов
         )
+        self._base_delay = kwargs.get('base_delay', 10)
 
     def _make_request(self, url, filters=None):
         # Параметры для регулирования скорости выполнения запросов на экспорт
         retry_count = 0
-        base_delay = 10
 
         if filters:
             params = {
@@ -43,7 +43,7 @@ class Getcourse:
                 else:
                     # Увеличение задержки с каждой неудачной попыткой
                     retry_count += 1
-                    sleep(base_delay * 2 ^ retry_count)
+                    sleep(self._base_delay * 2 ^ retry_count)
             else:
                 GetcourseApiError(response.text)
 
@@ -82,6 +82,6 @@ class Getcourse:
         export_url = '/'.join([base_url, 'exports', export_id])
 
         # Запрос на экспорт данных
-        sleep(15)  # Даём время на формирование файла
+        sleep(self._base_delay)  # Даём время на формирование файла
         export_response = self._make_request(export_url)
         return export_response
