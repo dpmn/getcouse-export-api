@@ -1,7 +1,13 @@
+import json
 import re
+import hashlib
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, date
 from decimal import Decimal
+
+
+def do_hash(input_value: str):
+    return hashlib.md5(input_value.strip().lower().encode()).hexdigest()
 
 
 class DealsSchema(BaseModel):
@@ -15,6 +21,15 @@ class DealsSchema(BaseModel):
                 data[key] = None
 
         super().__init__(**data)
+
+    @field_validator(
+        'tags',
+        'offer_tags',
+        mode='before'
+    )
+    @classmethod
+    def list_to_json_string(cls, value):
+        return json.dumps(value)
 
     order_id: str | None = Field(
         alias='ID заказа'
@@ -154,12 +169,31 @@ class DealsSchema(BaseModel):
     user_gcpc: str | None = Field(
         alias='user_gcpc'
     )
-    tags: list | None = Field(
+    tags: str | None = Field(
         alias='Теги'
     )
-    offer_tags: list | None = Field(
+    offer_tags: str | None = Field(
         alias='Теги предложений'
     )
+
+    @field_validator(
+        'user_email',
+        'user_phone',
+        'order_partner_email',
+        'user_partner_email'
+    )
+    def hash_sensitive_data(cls, v):
+        """
+        Хеширование персональных данных пользователя.
+        :param v: Значение поля.
+        :return:
+        """
+        if v == '':
+            v = None
+
+        if v is not None:
+            return do_hash(str(v))
+        return v
 
 
 class PaymentsSchema(BaseModel):
@@ -203,6 +237,20 @@ class PaymentsSchema(BaseModel):
         description='Название предложения'
     )
 
+    @field_validator('user_email')
+    def hash_sensitive_data(cls, v):
+        """
+        Хеширование персональных данных пользователя.
+        :param v: Значение поля.
+        :return:
+        """
+        if v == '':
+            v = None
+
+        if v is not None:
+            return do_hash(str(v))
+        return v
+
 
 class UsersSchema(BaseModel):
     """
@@ -241,6 +289,24 @@ class UsersSchema(BaseModel):
     partner_full_name: str | None = Field(alias='ФИО партнера')
     manager_full_name: str | None = Field(alias='ФИО менеджера')
     vk_id: str | None = Field(alias='VK-ID')
+
+    @field_validator(
+        'email',
+        'phone',
+        'partner_email'
+    )
+    def hash_sensitive_data(cls, v):
+        """
+        Хеширование персональных данных пользователя.
+        :param v: Значение поля.
+        :return:
+        """
+        if v == '':
+            v = None
+
+        if v is not None:
+            return do_hash(str(v))
+        return v
 
 
 class GroupsSchema(BaseModel):
