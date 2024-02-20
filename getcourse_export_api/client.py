@@ -43,7 +43,7 @@ class Getcourse:
                 else:
                     # Увеличение задержки с каждой неудачной попыткой
                     retry_count += 1
-                    sleep(self._base_delay * 2 ^ retry_count)
+                    sleep(self._base_delay * 2 ** retry_count)
             else:
                 GetcourseApiError(response.text)
 
